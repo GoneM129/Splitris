@@ -1,7 +1,7 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const nextCanvas = document.getElementById('nextCanvas');
-const nextCtx = nextCanvas.getContext('2d');
+const nextCanvases = document.querySelectorAll('.next-canvas');
+const nextCtxs = Array.from(nextCanvases).map(canvas => canvas.getContext('2d'));
 
 const scoreElement = document.getElementById('score');
 const levelElement = document.getElementById('level');
@@ -56,7 +56,7 @@ canvas.height = ROWS * BLOCK_SIZE;
 let board;
 let player;
 let currentTetromino;
-let nextTetromino;
+let nextTetrominos = [];
 let shadowTetromino;
 let score;
 let level;
@@ -169,15 +169,14 @@ function resetGame() {
     gameOverOverlay.style.display = 'none';
     
     createTetromino();
-    createNextTetromino();
     
     if (animationId) cancelAnimationFrame(animationId);
     gameLoop();
 }
 
 function createTetromino() {
-    if (nextTetromino) {
-        currentTetromino = nextTetromino;
+    if (nextTetrominos.length > 0) {
+        currentTetromino = nextTetrominos.shift();
     } else {
         const shapes = Object.keys(TETROMINOES);
         const shape = shapes[Math.floor(Math.random() * shapes.length)];
@@ -189,50 +188,57 @@ function createTetromino() {
             color: COLORS[shape]
         };
     }
-    
+
     // 게임 오버 체크
     if (collide(currentTetromino)) {
         endGame();
         return;
     }
-    
-    createNextTetromino();
+
+    while (nextTetrominos.length < 4) {
+        createNextTetromino();
+    }
+    drawNextTetrominos();
     updateShadow();
 }
 
 function createNextTetromino() {
     const shapes = Object.keys(TETROMINOES);
     const shape = shapes[Math.floor(Math.random() * shapes.length)];
-    nextTetromino = {
+    const nextTetromino = {
         x: Math.floor(COLS / 2) - 1,
         y: 0,
         shape: TETROMINOES[shape],
         type: shape,
         color: COLORS[shape]
     };
-    drawNextTetromino();
+    nextTetrominos.push(nextTetromino);
 }
 
-function drawNextTetromino() {
-    nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
-    
-    const shape = nextTetromino.shape;
-    const blockSize = 20;
-    const offsetX = (nextCanvas.width - shape[0].length * blockSize) / 2;
-    const offsetY = (nextCanvas.height - shape.length * blockSize) / 2;
-    
-    shape.forEach((row, y) => {
-        row.forEach((value, x) => {
-            if (value) {
-                drawBlock(nextCtx, 
-                    offsetX + x * blockSize, 
-                    offsetY + y * blockSize, 
-                    blockSize, 
-                    nextTetromino.color, 
-                    nextTetromino.type
-                );
-            }
-        });
+function drawNextTetrominos() {
+    nextCtxs.forEach((ctx, index) => {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        if (nextTetrominos[index]) {
+            const tetromino = nextTetrominos[index];
+            const shape = tetromino.shape;
+            const blockSize = 20;
+            const offsetX = (ctx.canvas.width - shape[0].length * blockSize) / 2;
+            const offsetY = (ctx.canvas.height - shape.length * blockSize) / 2;
+
+            shape.forEach((row, y) => {
+                row.forEach((value, x) => {
+                    if (value) {
+                        drawBlock(ctx,
+                            offsetX + x * blockSize,
+                            offsetY + y * blockSize,
+                            blockSize,
+                            tetromino.color,
+                            tetromino.type
+                        );
+                    }
+                });
+            });
+        }
     });
 }
 

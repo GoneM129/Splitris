@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPLITRIS - Dual Brain Challenge</title>
+    <title>SPLITRIS_DualBrainChallenge</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -13,16 +13,16 @@
         <div class="side-panel">
             <div class="info-panel">
                 <div class="info"><span id="score">0</span></div>
-                <div class="info">LEVEL - <span id="level">1</span></div>
-                <div class="info">CLEAR - <span id="lines">0</span></div>
+                <div class="info">LEVEL _  <span id="level">1</span></div>
+                <div class="info">CLEAR _  <span id="lines">0</span></div>
                 <div id="combo" class="combo-display"></div>
             </div>
 
             <div class="controls">
-                <p>Tetris: Move with ←/→, rotate with ↑, soft drop with ↓</p>
-                <p>Player: Move left/right with A/D, jump with Space</p>
+                <p>Tetris [Move with ←/→, rotate with ↑, soft drop with ↓]</p>
+                <p>Player [Move left/right with A/D, jump with Space]</p>
                 <p>Staying in the same spot for over 10 seconds results in game over</p>
-                <p>Goal: Dodge the falling blocks and complete lines to survive!</p>
+                <p>[Dodge the falling blocks and complete lines to survive!]</p>
             </div>
         </div>
 
@@ -31,12 +31,13 @@
             <div class="particles" id="particles"></div>
         </div>
 
-        <div class="info-panel">
-            <h3>NEXT</h3>
-            <canvas id="nextCanvas" width="120" height="80"></canvas>
-            <canvas id="nextCanvas" width="120" height="80"></canvas>
-            <canvas id="nextCanvas" width="120" height="80"></canvas>
-            <canvas id="nextCanvas" width="120" height="80"></canvas>
+        <div class="info-panel2">
+            <div id="nextBlocks">
+                <canvas class="next-canvas" width="120" height="80"></canvas>
+                <canvas class="next-canvas" width="120" height="80"></canvas>
+                <canvas class="next-canvas" width="120" height="80"></canvas>
+                <canvas class="next-canvas" width="120" height="80"></canvas>
+            </div>
         </div>
     </div>`
 
@@ -45,8 +46,8 @@
     <div class="game-over-overlay" id="gameOverOverlay">
         <div class="game-over-content">
             <h2>GAME OVER</h2>
-            <p>SCORE:  <span id="finalScore">0</span></p>
-            <p>CLEAR LINE: <span id="finalLines">0</span></p>
+            <p>SCORE _  <span id="finalScore">0</span></p>
+            <p>CLEAR LINE _ <span id="finalLines">0</span></p>
             <button class="restart-btn" onclick="resetGame()">RESTART</button>
         </div>
     </div>
