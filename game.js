@@ -149,10 +149,19 @@ function resetGame() {
     // 애니메이션 프레임 정리
     if (animationId) {
         cancelAnimationFrame(animationId);
-        animationId = null;  // animationId 명시적으로 null로 설정
+        animationId = null;
     }
 
     // 게임 상태 초기화
+    gameOver = false;
+    
+    // 타이머 관련 변수 완전 초기화
+    dropCounter = 0;
+    lastTime = performance.now();
+    timeInSamePos = 0;
+    lastPlayerPos = { x: null, y: null };
+    
+    // 게임 데이터 초기화
     board = Array(ROWS).fill(null).map(() => Array(COLS).fill(null));
     currentTetromino = null;
     shadowTetromino = null;
@@ -170,14 +179,15 @@ function resetGame() {
         jumpBufferTime: 0
     };
     
+    // 점수 및 레벨 초기화
     score = 0;
     level = 1;
     lines = 0;
     combo = 0;
+    
+    // 기타 게임 요소 초기화
     particles = [];
     nextTetrominos = [];
-    lastPlayerPos = { x: null, y: null };
-    timeInSamePos = 0;
     
     // UI 초기화
     if (timerDisplay) {
@@ -188,14 +198,17 @@ function resetGame() {
         gameOverOverlay.style.display = 'none';
     }
     
-    // 게임 상태 초기화
-    gameOver = false;
-    lastTime = 0;  // lastTime 초기화 추가
-    dropCounter = 0;  // dropCounter 초기화 추가
+    // 키 상태 초기화
+    keys = {};
     
+    // UI 업데이트
     updateUI();
+    
+    // 새로운 테트로미노 생성
     createTetromino();
-    gameLoop();  // 새로운 게임 루프 시작
+    
+    // 게임 루프 시작 (마지막 시간 초기화와 함께)
+    requestAnimationFrame(gameLoop);
 }
 
 function createTetromino() {
