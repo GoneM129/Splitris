@@ -17,6 +17,8 @@ const COLS = 10;
 const ROWS = 20;
 const BLOCK_SIZE = 30;
 
+
+
 // 개선된 물리 상수
 const GRAVITY = 0.5;
 const JUMP_STRENGTH = -12;
@@ -33,7 +35,7 @@ const COLORS = {
     Z: '#EBD6FB',
     T: '#EBD6FB',
     O: '#EBD6FB',
-    player: '#FFC107',
+    player: '#FFC107', // 아기자기한 핑크빛
     shadow: 'rgba(255,255,255,0.05)'
 };
 
@@ -67,11 +69,8 @@ let keys = {};
 let particles = [];
 let lastPlayerPos = { x: null, y: null };
 let timeInSamePos = 0;
-let dropCounter = 0;
-let dropInterval = 300;
-let lastTime = 0;
 
-// 테트리스 블록 모양
+// 테트리스 블록 모양 (개선된 중심점 기반)
 const TETROMINOES = {
     'I': [
         [0, 0, 0, 0],
@@ -126,7 +125,7 @@ class Particle {
     update() {
         this.x += this.vx;
         this.y += this.vy;
-        this.vy += 0.2;
+        this.vy += 0.2; // 중력
         this.life -= this.decay;
         this.size *= 0.98;
     }
@@ -150,12 +149,13 @@ function resetGame() {
     // 애니메이션 프레임 정리
     if (animationId) {
         cancelAnimationFrame(animationId);
-        animationId = null;
+        animationId = null;  // animationId 명시적으로 null로 설정
     }
 
     // 게임 상태 초기화
-    gameOver = false;
     board = Array(ROWS).fill(null).map(() => Array(COLS).fill(null));
+    currentTetromino = null;
+    shadowTetromino = null;
     
     // 플레이어 초기화
     player = {
@@ -170,60 +170,32 @@ function resetGame() {
         jumpBufferTime: 0
     };
     
-    // 게임 점수 및 상태 초기화
     score = 0;
     level = 1;
     lines = 0;
     combo = 0;
-    
-    // 테트로미노 관련 초기화
-    currentTetromino = null;
-    nextTetrominos = [];
-    shadowTetromino = null;
-    
-    // 게임 루프 관련 초기화
-    dropCounter = 0;
-    dropInterval = 300;
-    lastTime = 0;
-    
-    // 파티클 초기화
     particles = [];
-    
-    // 키 상태 초기화
-    keys = {};
-    
-    // 타이머 관련 초기화
+    nextTetrominos = [];
     lastPlayerPos = { x: null, y: null };
     timeInSamePos = 0;
     
     // UI 초기화
-    updateUI();
     if (timerDisplay) {
         timerDisplay.textContent = '0.0s';
         timerDisplay.classList.remove('warning');
     }
-    
-    // 게임 오버 오버레이 숨기기
     if (gameOverOverlay) {
         gameOverOverlay.style.display = 'none';
     }
     
-    // 화면 흔들림 효과 제거
-    const container = document.querySelector('.game-container');
-    if (container) {
-        container.classList.remove('shake');
-    }
+    // 게임 상태 초기화
+    gameOver = false;
+    lastTime = 0;  // lastTime 초기화 추가
+    dropCounter = 0;  // dropCounter 초기화 추가
     
-    // 다음 캔버스 초기화
-    nextCtxs.forEach(ctx => {
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    });
-    
-    // 새로운 테트로미노 생성
+    updateUI();
     createTetromino();
-    
-    // 게임 루프 시작
-    gameLoop();
+    gameLoop();  // 새로운 게임 루프 시작
 }
 
 function createTetromino() {
@@ -247,7 +219,6 @@ function createTetromino() {
         return;
     }
 
-    // 다음 테트로미노들 생성
     while (nextTetrominos.length < 4) {
         createNextTetromino();
     }
@@ -296,13 +267,16 @@ function drawNextTetrominos() {
 }
 
 function updateShadow() {
-    if (!currentTetromino) return;
     shadowTetromino = { ...currentTetromino };
     while (!collide(shadowTetromino)) {
         shadowTetromino.y++;
     }
     shadowTetromino.y--;
 }
+
+let dropCounter = 0;
+let dropInterval = 300;
+let lastTime = 0;
 
 function gameLoop(time = 0) {
     if (gameOver) return;
@@ -328,18 +302,20 @@ function gameLoop(time = 0) {
 }
 
 function updatePlayer(deltaTime) {
-    const dt = deltaTime / 1000;
+    const dt = deltaTime / 1000; // 초 단위로 정규화
 
-    const accel = 60;
-    const maxSpeed = 6;
-    const airControl = 0.5;
-    const decel = 40;
-    const gravity = 30;
+    const accel = 60;          // 좌우 가속도
+    const maxSpeed = 6;        // 최대 속도
+    const airControl = 0.5;    // 공중 이동 감쇠
+    const decel = 40;          // 감속 속도
+
+    const gravity = 30;        // 중력 가속도
     const terminalVelocity = 15;
     const jumpVelocity = -12;
 
-    const isMovingLeft = keys[65];
-    const isMovingRight = keys[68];
+    const isMovingLeft = keys[65];  // A
+    const isMovingRight = keys[68]; // D
+
     const onGround = player.onGround;
 
     // 좌우 입력 처리
@@ -348,6 +324,7 @@ function updatePlayer(deltaTime) {
     } else if (isMovingRight) {
         player.vx += accel * dt * (onGround ? 1 : airControl);
     } else {
+        // 감속
         if (player.vx > 0) {
             player.vx = Math.max(0, player.vx - decel * dt);
         } else if (player.vx < 0) {
@@ -355,6 +332,7 @@ function updatePlayer(deltaTime) {
         }
     }
 
+    // 속도 제한
     player.vx = Math.max(-maxSpeed, Math.min(maxSpeed, player.vx));
 
     // 수평 이동 충돌 처리
@@ -375,6 +353,7 @@ function updatePlayer(deltaTime) {
         player.y = newY;
         player.onGround = false;
     } else {
+        // 바닥 충돌
         if (player.vy > 0) {
             player.onGround = true;
             player.coyoteTime = 0.1;
@@ -384,10 +363,12 @@ function updatePlayer(deltaTime) {
         player.vy = 0;
     }
 
+    // 코요테 타임 감소
     if (player.coyoteTime > 0) {
         player.coyoteTime -= dt;
     }
 
+    // 점프 버퍼 처리
     if (player.jumpBufferTime > 0) {
         player.jumpBufferTime -= dt;
 
@@ -400,13 +381,13 @@ function updatePlayer(deltaTime) {
     }
 
     if (isCollidingAt(player.x, player.y, player.width, player.height)) {
-        createParticles(
-            player.x * BLOCK_SIZE + (player.width * BLOCK_SIZE) / 2,
-            player.y * BLOCK_SIZE + (player.height * BLOCK_SIZE) / 2,
-            COLORS.player,
-            20
-        );
-        endGame();
+    createParticles(
+        player.x * BLOCK_SIZE + (player.width * BLOCK_SIZE) / 2,
+        player.y * BLOCK_SIZE + (player.height * BLOCK_SIZE) / 2,
+        COLORS.player,
+        20
+    );
+    endGame();
     }
 
     // 10초 타이머 로직
@@ -415,7 +396,7 @@ function updatePlayer(deltaTime) {
 
     if (currentPlayerGridX === lastPlayerPos.x && currentPlayerGridY === lastPlayerPos.y) {
         timeInSamePos += deltaTime;
-        if (timeInSamePos > 10000) {
+        if (timeInSamePos > 10000) { // 10초
             endGame();
         }
     } else {
@@ -425,13 +406,11 @@ function updatePlayer(deltaTime) {
     }
 
     // 타이머 UI 업데이트
-    if (timerDisplay) {
-        timerDisplay.textContent = (timeInSamePos / 1000).toFixed(1) + 's';
-        if (timeInSamePos > 7000) {
-            timerDisplay.classList.add('warning');
-        } else {
-            timerDisplay.classList.remove('warning');
-        }
+    timerDisplay.textContent = (timeInSamePos / 1000).toFixed(1) + 's';
+    if (timeInSamePos > 7000) {
+        timerDisplay.classList.add('warning');
+    } else {
+        timerDisplay.classList.remove('warning');
     }
 }
 
@@ -464,7 +443,7 @@ function playerJump() {
         player.coyoteTime = 0;
         player.jumpBufferTime = 0;
     } else {
-        player.jumpBufferTime = 0.1;
+        player.jumpBufferTime = 0.1; // 100ms 점프 버퍼
     }
 }
 
@@ -475,6 +454,7 @@ function createParticles(x, y, color, count = 10) {
 }
 
 function drawBlock(context, x, y, size, color, type) {
+    // 그라데이션 효과
     if (GRADIENTS[type]) {
         const gradient = context.createLinearGradient(x, y, x + size, y + size);
         gradient.addColorStop(0, GRADIENTS[type][0]);
@@ -486,16 +466,33 @@ function drawBlock(context, x, y, size, color, type) {
 
     context.fillRect(x, y, size, size);
     
+    // 테두리 효과
     context.strokeStyle = 'rgba(0,0,0,0.3)';
     context.lineWidth = 1;
     context.strokeRect(x, y, size, size);
     
+    // 하이라이트 효과
     context.fillStyle = 'rgba(255,255,255,0.3)';
     context.fillRect(x + 1, y + 1, size - 2, 2);
 }
 
+function drawRoundedRect(ctx, x, y, width, height, radius) {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+}
+
 function draw() {
-    ctx.fillStyle = '#F9F7F7';
+    // 어두운 단색 배경
+    ctx.fillStyle = '#F9F7F7'; 
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // 보드 그리기
@@ -513,32 +510,38 @@ function draw() {
     }
 
     // 현재 블록 그리기
-    if (currentTetromino) {
-        drawTetromino(currentTetromino, currentTetromino.color);
-    }
+    drawTetromino(currentTetromino, currentTetromino.color);
 
-    // 플레이어 그리기
+    // 플레이어
     const px = player.x * BLOCK_SIZE;
     const py = player.y * BLOCK_SIZE;
     const pw = player.width * BLOCK_SIZE;
     const ph = player.height * BLOCK_SIZE;
 
-    ctx.shadowColor = '#FF4136';
+    // 눈에 띄는 새로운 디자인: 밝은 네온 효과
+    const centerX = px + pw / 2;
+    const centerY = py + ph / 2;
+
+    // 외부 글로우
+    ctx.shadowColor = '#FF4136'; // 붉은색 네온
     ctx.shadowBlur = 15;
     
-    ctx.fillStyle = '#FF4136';
+    // 내부 색상
+    ctx.fillStyle = '#FF4136'; // 붉은색 네온
     ctx.fillRect(px, py, pw, ph);
 
+    // 내부 하이라이트
     ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
     ctx.fillRect(px + pw * 0.15, py + ph * 0.15, pw * 0.7, ph * 0.7);
 
+    // 그림자 리셋
     ctx.shadowBlur = 0;
     ctx.shadowColor = 'transparent';
 
     // 파티클 그리기
     particles.forEach(particle => particle.draw(ctx));
 
-    // 격자 그리기
+    // 격자 그리기 (선택사항)
     ctx.strokeStyle = 'rgba(0,0,0,0.1)';
     ctx.lineWidth = 0.5;
     for (let x = 0; x <= COLS; x++) {
@@ -556,8 +559,6 @@ function draw() {
 }
 
 function drawTetromino(tetromino, color) {
-    if (!tetromino) return;
-    
     tetromino.shape.forEach((row, y) => {
         row.forEach((value, x) => {
             if (value) {
@@ -565,6 +566,7 @@ function drawTetromino(tetromino, color) {
                 const blockY = (tetromino.y + y) * BLOCK_SIZE;
                 
                 if (color === 'rgba(0,0,0,0.2)') {
+                    // 그림자
                     ctx.fillStyle = color;
                     ctx.fillRect(blockX, blockY, BLOCK_SIZE, BLOCK_SIZE);
                 } else {
@@ -576,8 +578,6 @@ function drawTetromino(tetromino, color) {
 }
 
 function dropTetromino() {
-    if (!currentTetromino) return;
-    
     currentTetromino.y++;
     if (collide(currentTetromino)) {
         currentTetromino.y--;
@@ -592,8 +592,6 @@ function dropTetromino() {
 }
 
 function moveTetromino(dir) {
-    if (!currentTetromino) return;
-    
     currentTetromino.x += dir;
     if (collide(currentTetromino)) {
         currentTetromino.x -= dir;
@@ -603,12 +601,13 @@ function moveTetromino(dir) {
 }
 
 function rotateTetromino() {
-    if (!currentTetromino || currentTetromino.type === 'O') return;
+    if (currentTetromino.type === 'O') return;
 
     const originalShape = currentTetromino.shape;
     const rotatedShape = rotate(originalShape);
     
-    const kicks = getSRSKicks(currentTetromino.type, 0, 1);
+    // SRS (Super Rotation System) 구현
+    const kicks = getSRSKicks(currentTetromino.type, 0, 1); // 0에서 1로 회전
     
     for (const kick of kicks) {
         const testTetromino = {
@@ -663,8 +662,6 @@ function rotate(matrix) {
 }
 
 function collide(tetromino) {
-    if (!tetromino) return false;
-    
     const { shape, x, y } = tetromino;
     for (let row = 0; row < shape.length; row++) {
         for (let col = 0; col < shape[row].length; col++) {
@@ -682,8 +679,6 @@ function collide(tetromino) {
 }
 
 function merge() {
-    if (!currentTetromino) return;
-    
     currentTetromino.shape.forEach((row, y) => {
         row.forEach((value, x) => {
             if (value) {
@@ -696,8 +691,10 @@ function merge() {
         });
     });
 
+    // 🔥 merge 이후 충돌 체크
     checkCollisions();
 }
+
 
 function clearLines() {
     let linesCleared = 0;
@@ -731,11 +728,10 @@ function clearLines() {
     }
 
     if (linesCleared > 0) {
+        // 화면 흔들림 효과 추가
         const container = document.querySelector('.game-container');
-        if (container) {
-            container.classList.add('shake');
-            setTimeout(() => container.classList.remove('shake'), 300);
-        }
+        container.classList.add('shake');
+        setTimeout(() => container.classList.remove('shake'), 300);
 
         combo++;
         lines += linesCleared;
@@ -753,7 +749,7 @@ function clearLines() {
 }
 
 function checkCollisions() {
-    if (!currentTetromino) return;
+    if (!currentTetromino) return; // 현재 블록이 없으면 검사 중단
 
     const playerGrid = {
         left: Math.floor(player.x),
@@ -775,11 +771,11 @@ function checkCollisions() {
                     createParticles(
                         player.x * BLOCK_SIZE + (player.width * BLOCK_SIZE) / 2,
                         player.y * BLOCK_SIZE + (player.height * BLOCK_SIZE) / 2,
-                        '#FF4136',
+                        '#FF4136', // 플레이어 색상과 맞춤
                         20
                     );
                     endGame();
-                    return;
+                    return; // 충돌 발견 시 즉시 함수 종료
                 }
             }
         }
@@ -787,17 +783,15 @@ function checkCollisions() {
 }
 
 function updateUI() {
-    if (scoreElement) scoreElement.textContent = score;
-    if (levelElement) levelElement.textContent = level;
-    if (linesElement) linesElement.textContent = lines;
+    scoreElement.textContent = score;
+    levelElement.textContent = level;
+    linesElement.textContent = lines;
     
-    if (comboElement) {
-        if (combo > 1) {
-            comboElement.textContent = `콤보 x${combo}!`;
-            comboElement.style.display = 'block';
-        } else {
-            comboElement.style.display = 'none';
-        }
+    if (combo > 1) {
+        comboElement.textContent = `콤보 x${combo}!`;
+        comboElement.style.display = 'block';
+    } else {
+        comboElement.style.display = 'none';
     }
 }
 
@@ -805,27 +799,28 @@ function endGame() {
     if (gameOver) return;
     gameOver = true;
     
+    // UI 업데이트
     if (finalScoreElement) finalScoreElement.textContent = score;
     if (finalLinesElement) finalLinesElement.textContent = lines;
     if (gameOverOverlay) gameOverOverlay.style.display = 'flex';
     
+    // 애니메이션 정리
     if (animationId) {
         cancelAnimationFrame(animationId);
-        animationId = null;
+        animationId = null;  // animationId 명시적으로 null로 설정
     }
 }
 
 function hardDrop() {
-    if (!currentTetromino) return;
-    
     while (!collide(currentTetromino)) {
         currentTetromino.y++;
-        score += 2;
+        score += 2; // 하드 드롭 보너스
     }
     currentTetromino.y--;
 
     merge();
     
+    // 🔥 플레이어와 충돌 확인
     checkCollisions();
     if (gameOver) return;
 
@@ -875,8 +870,6 @@ document.addEventListener('keyup', (e) => {
     keys[e.keyCode] = false;
 });
 
-// 전역 함수로 노출하여 HTML에서 호출 가능하게 함
-window.resetGame = resetGame;
 
 // 게임 시작
 resetGame();
