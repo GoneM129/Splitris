@@ -58,6 +58,7 @@ let board;
 let player;
 let currentTetromino;
 let nextTetrominos = [];
+let tetrominoBag = [];
 let shadowTetromino;
 let score;
 let level;
@@ -188,6 +189,7 @@ function resetGame() {
     // 기타 게임 요소 초기화
     particles = [];
     nextTetrominos = [];
+    tetrominoBag = [];
     
     // UI 초기화
     if (timerDisplay) {
@@ -211,20 +213,35 @@ function resetGame() {
     requestAnimationFrame(gameLoop);
 }
 
+function fillTetrominoBag() {
+    // tetrominoBag을 7개의 테트로미노 조각 이름으로 채우고 섞습니다.
+    const shapes = Object.keys(TETROMINOES);
+    // Fisher-Yates (aka Knuth) Shuffle
+    for (let i = shapes.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shapes[i], shapes[j]] = [shapes[j], shapes[i]];
+    }
+    tetrominoBag = shapes;
+}
+
 function createTetromino() {
-    if (nextTetrominos.length > 0) {
-        currentTetromino = nextTetrominos.shift();
-    } else {
-        const shapes = Object.keys(TETROMINOES);
-        const shape = shapes[Math.floor(Math.random() * shapes.length)];
-        currentTetromino = {
+    // 다음 조각 큐가 충분히 채워져 있는지 확인합니다.
+    while (nextTetrominos.length < 5) { // 현재 조각 + 4개 미리보기
+        if (tetrominoBag.length === 0) {
+            fillTetrominoBag(); // 가방이 비었으면 다시 채웁니다.
+        }
+        const shapeType = tetrominoBag.pop(); // 가방에서 조각 유형을 가져옵니다.
+        const nextTetromino = {
             x: Math.floor(COLS / 2) - 1,
             y: 0,
-            shape: TETROMINOES[shape],
-            type: shape,
-            color: COLORS[shape]
+            shape: TETROMINOES[shapeType],
+            type: shapeType,
+            color: COLORS[shapeType]
         };
+        nextTetrominos.push(nextTetromino);
     }
+
+    currentTetromino = nextTetrominos.shift(); // 큐에서 다음 조각을 가져와 현재 조각으로 설정합니다.
 
     // 게임 오버 체크
     if (collide(currentTetromino)) {
@@ -232,24 +249,14 @@ function createTetromino() {
         return;
     }
 
-    while (nextTetrominos.length < 4) {
-        createNextTetromino();
-    }
     drawNextTetrominos();
     updateShadow();
 }
 
+// createNextTetromino 함수는 이제 createTetromino 로직에 통합되었으므로
+// 이 함수는 더 이상 필요하지 않습니다.
 function createNextTetromino() {
-    const shapes = Object.keys(TETROMINOES);
-    const shape = shapes[Math.floor(Math.random() * shapes.length)];
-    const nextTetromino = {
-        x: Math.floor(COLS / 2) - 1,
-        y: 0,
-        shape: TETROMINOES[shape],
-        type: shape,
-        color: COLORS[shape]
-    };
-    nextTetrominos.push(nextTetromino);
+    // 비워 둡니다.
 }
 
 function drawNextTetrominos() {
