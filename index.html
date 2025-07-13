@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>스푸프 - 피하는 테트리스</title>
+    <title>SPLITRIS - Dual Brain Challenge</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -13,16 +13,16 @@
         <div class="side-panel">
             <div class="info-panel">
                 <div class="info"><span id="score">0</span></div>
-                <div class="info">Level - <span id="level">1</span></div>
-                <div class="info">Clear - <span id="lines">0</span></div>
+                <div class="info">LEVEL - <span id="level">1</span></div>
+                <div class="info">CLEAR - <span id="lines">0</span></div>
                 <div id="combo" class="combo-display"></div>
             </div>
 
             <div class="controls">
-                <p>테트리스: ←→ 이동, ↑ 회전, ↓ 빠른 낙하</p>
-                <p>플레이어: A/D 좌우 이동, Space 점프</p>
-                <p>같은 자리에 10초 이상 머물면 게임 오버</p>
-                <p>목표: 떨어지는 블록을 피하면서 라인을 완성하세요!</p>
+                <p>Tetris: Move with ←/→, rotate with ↑, soft drop with ↓</p>
+                <p>Player: Move left/right with A/D, jump with Space</p>
+                <p>Staying in the same spot for over 10 seconds results in game over</p>
+                <p>Goal: Dodge the falling blocks and complete lines to survive!</p>
             </div>
         </div>
 
@@ -32,7 +32,7 @@
         </div>
 
         <div class="info-panel">
-            <h3>다음 블록</h3>
+            <h3>NEXT</h3>
             <canvas id="nextCanvas" width="120" height="80"></canvas>
             <canvas id="nextCanvas" width="120" height="80"></canvas>
             <canvas id="nextCanvas" width="120" height="80"></canvas>
@@ -44,10 +44,10 @@
 
     <div class="game-over-overlay" id="gameOverOverlay">
         <div class="game-over-content">
-            <h2>게임 오버!</h2>
-            <p>최종 점수: <span id="finalScore">0</span></p>
-            <p>클리어한 라인: <span id="finalLines">0</span></p>
-            <button class="restart-btn" onclick="resetGame()">다시 시작</button>
+            <h2>GAME OVER</h2>
+            <p>SCORE:  <span id="finalScore">0</span></p>
+            <p>CLEAR LINE: <span id="finalLines">0</span></p>
+            <button class="restart-btn" onclick="resetGame()">RESTART</button>
         </div>
     </div>
 
