@@ -93,11 +93,11 @@ h1 {
 }
 
 .combo-display {
-    color: #00BFFF; /* Blue Neon */
+    color: #FF4136; /* Blue Neon */
     animation: pulse 0.5s ease-in-out infinite;
     font-size: 1.5rem;
     font-weight: bold;
-    text-shadow: 0 0 10px #00BFFF; /* Blue Neon */
+    text-shadow: 0 0 10px #FF4136; /* Blue Neon */
     text-align: center;
     margin-top: 10px;
 }

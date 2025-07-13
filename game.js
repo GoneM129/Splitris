@@ -801,7 +801,7 @@ function updateUI() {
     linesElement.textContent = lines;
     
     if (combo > 1) {
-        comboElement.textContent = `콤보 x${combo}!`;
+        comboElement.textContent = `COMBO x${combo}!`;
         comboElement.style.display = 'block';
     } else {
         comboElement.style.display = 'none';
