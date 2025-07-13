@@ -10,6 +10,7 @@ const comboElement = document.getElementById('combo');
 const gameOverOverlay = document.getElementById('gameOverOverlay');
 const finalScoreElement = document.getElementById('finalScore');
 const finalLinesElement = document.getElementById('finalLines');
+const timerDisplay = document.getElementById('timer-display');
 
 // 게임 설정
 const COLS = 10;
@@ -66,6 +67,8 @@ let gameOver;
 let animationId;
 let keys = {};
 let particles = [];
+let lastPlayerPos = { x: null, y: null };
+let timeInSamePos = 0;
 
 // 테트리스 블록 모양 (개선된 중심점 기반)
 const TETROMINOES = {
@@ -144,6 +147,8 @@ class Particle {
 
 function resetGame() {
     board = Array(ROWS).fill(null).map(() => Array(COLS).fill(null));
+    currentTetromino = null;
+    shadowTetromino = null;
     
     // 개선된 플레이어 물리
     player = {
@@ -163,6 +168,11 @@ function resetGame() {
     lines = 0;
     combo = 0;
     particles = [];
+    nextTetrominos = []; // 다음 블록 배열 초기화
+    lastPlayerPos = { x: null, y: null };
+    timeInSamePos = 0;
+    timerDisplay.textContent = '0.0s';
+    timerDisplay.classList.remove('warning');
     
     updateUI();
     gameOver = false;
@@ -364,7 +374,30 @@ function updatePlayer(deltaTime) {
         20
     );
     endGame();
-}
+    }
+
+    // 10초 타이머 로직
+    const currentPlayerGridX = Math.floor(player.x);
+    const currentPlayerGridY = Math.floor(player.y);
+
+    if (currentPlayerGridX === lastPlayerPos.x && currentPlayerGridY === lastPlayerPos.y) {
+        timeInSamePos += deltaTime;
+        if (timeInSamePos > 10000) { // 10초
+            endGame();
+        }
+    } else {
+        timeInSamePos = 0;
+        lastPlayerPos.x = currentPlayerGridX;
+        lastPlayerPos.y = currentPlayerGridY;
+    }
+
+    // 타이머 UI 업데이트
+    timerDisplay.textContent = (timeInSamePos / 1000).toFixed(1) + 's';
+    if (timeInSamePos > 7000) {
+        timerDisplay.classList.add('warning');
+    } else {
+        timerDisplay.classList.remove('warning');
+    }
 }
 
 function isCollidingAt(x, y, width, height) {
@@ -471,20 +504,25 @@ function draw() {
     const pw = player.width * BLOCK_SIZE;
     const ph = player.height * BLOCK_SIZE;
 
-    const playerGradient = ctx.createRadialGradient(
-        px + pw / 2, py + ph / 2, 2,
-        px + pw / 2, py + ph / 2, Math.max(pw, ph)
-    );
-    playerGradient.addColorStop(0, '#FFC107');
-    playerGradient.addColorStop(1, '#FF6F3C');
+    // 눈에 띄는 새로운 디자인: 밝은 네온 효과
+    const centerX = px + pw / 2;
+    const centerY = py + ph / 2;
 
-    ctx.fillStyle = playerGradient;
-    drawRoundedRect(ctx, px, py, pw, ph, 6);
-    ctx.fill();
+    // 외부 글로우
+    ctx.shadowColor = '#FF4136'; // 붉은색 네온
+    ctx.shadowBlur = 15;
+    
+    // 내부 색상
+    ctx.fillStyle = '#FF4136'; // 붉은색 네온
+    ctx.fillRect(px, py, pw, ph);
 
-    ctx.strokeStyle = '#FFC107';
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    // 내부 하이라이트
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.fillRect(px + pw * 0.15, py + ph * 0.15, pw * 0.7, ph * 0.7);
+
+    // 그림자 리셋
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = 'transparent';
 
     // 파티클 그리기
     particles.forEach(particle => particle.draw(ctx));
@@ -697,35 +735,37 @@ function clearLines() {
 }
 
 function checkCollisions() {
-    // 플레이어와 떨어지는 블록 충돌 체크
+    if (!currentTetromino) return; // 현재 블록이 없으면 검사 중단
+
     const playerGrid = {
         left: Math.floor(player.x),
         right: Math.floor(player.x + player.width),
         top: Math.floor(player.y),
         bottom: Math.floor(player.y + player.height)
     };
-    
-    // 현재 테트리미노와 충돌 체크
-    currentTetromino.shape.forEach((row, y) => {
-        row.forEach((value, x) => {
-            if (value) {
-                const blockX = currentTetromino.x + x;
-                const blockY = currentTetromino.y + y;
-                
-                if (blockX >= playerGrid.left && blockX <= playerGrid.right &&
-                    blockY >= playerGrid.top && blockY <= playerGrid.bottom) {
-                    // 충돌 시 파티클 생성 및 게임 오버
+
+    const { shape, x, y } = currentTetromino;
+    for (let row = 0; row < shape.length; row++) {
+        for (let col = 0; col < shape[row].length; col++) {
+            if (shape[row][col]) {
+                const blockX = x + col;
+                const blockY = y + row;
+
+                if (blockX >= playerGrid.left && blockX < playerGrid.right &&
+                    blockY >= playerGrid.top && blockY < playerGrid.bottom) {
+                    
                     createParticles(
                         player.x * BLOCK_SIZE + (player.width * BLOCK_SIZE) / 2,
                         player.y * BLOCK_SIZE + (player.height * BLOCK_SIZE) / 2,
-                        COLORS.player,
+                        '#FF4136', // 플레이어 색상과 맞춤
                         20
                     );
                     endGame();
+                    return; // 충돌 발견 시 즉시 함수 종료
                 }
             }
-        });
-    });
+        }
+    }
 }
 
 function updateUI() {
@@ -742,6 +782,7 @@ function updateUI() {
 }
 
 function endGame() {
+    if (gameOver) return; // 중복 호출 방지
     gameOver = true;
     finalScoreElement.textContent = score;
     finalLinesElement.textContent = lines;

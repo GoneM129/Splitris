@@ -11,16 +11,25 @@
 <body>
     <div class="game-container">
         <div class="side-panel">
-            <div class="info-panel">
-                <div class="info"><span id="score">0</span></div>
-                <div class="info">LEVEL _  <span id="level">1</span></div>
-                <div class="info">CLEAR _  <span id="lines">0</span></div>
+            <div class="info-panel score-panel">
+                <div class="info-item score-main">
+                    <label>SCORE</label>
+                    <span id="score">0</span>
+                </div>
+                <div class="info-item">
+                    <label>LEVEL</label>
+                    <span id="level">1</span>
+                </div>
+                <div class="info-item">
+                    <label>LINES</label>
+                    <span id="lines">0</span>
+                </div>
                 <div id="combo" class="combo-display"></div>
             </div>
 
             <div class="controls">
-                <p>Tetris [Move with ←/→, rotate with ↑, soft drop with ↓]</p>
-                <p>Player [Move left/right with A/D, jump with Space]</p>
+                <p>Tetris [Move with ←/→, rotate with ↑, soft drop with ↓, hard drop with space]</p>
+                <p>Player [Move left/right with A/D, jump with W]</p>
                 <p>Staying in the same spot for over 10 seconds results in game over</p>
                 <p>[Dodge the falling blocks and complete lines to survive!]</p>
             </div>
@@ -37,6 +46,10 @@
                 <canvas class="next-canvas" width="120" height="80"></canvas>
                 <canvas class="next-canvas" width="120" height="80"></canvas>
                 <canvas class="next-canvas" width="120" height="80"></canvas>
+            </div>
+            <div class="timer-container">
+                <h3>STAY TIMER</h3>
+                <div id="timer-display">0.0s</div>
             </div>
         </div>
     </div>`

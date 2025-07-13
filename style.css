@@ -36,62 +36,133 @@ h1 {
     align-items: flex-start;
 }
 
-.info-panel {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 20px;
-    border-radius: 10px;
-    backdrop-filter: blur(6px);
-    min-width: 200px;
-    border: 1px solid #333;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.info-panel2 {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 20px;
-    border-radius: 10px;
-    backdrop-filter: blur(6px);
-    min-width: 100px;
-    border: 1px solid #333;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
 .side-panel {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
-.info {
-    margin-bottom: 15px;
-    font-size: 3rem;
+/* --- NEON UI STYLES START --- */
+
+.info-panel, .controls {
+    background: rgba(17, 17, 17, 0.6);
+    padding: 20px;
+    border-radius: 10px;
+    border: 2px solid #00BFFF; /* Blue Neon */
+    box-shadow: 0 0 15px rgba(0, 191, 255, 0.5), inset 0 0 10px rgba(0, 191, 255, 0.3); /* Blue Neon */
+    backdrop-filter: blur(5px);
+    min-width: 220px;
+}
+
+.score-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px solid rgba(0, 191, 255, 0.2); /* Blue Neon */
+    padding-bottom: 10px;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-item label {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #00BFFF; /* Blue Neon */
+    text-transform: uppercase;
+}
+
+.info-item span {
+    font-size: 1.8rem;
     font-weight: bold;
-    color: #cccccc;
-    text-align: right;
+    color: #fff;
+    text-shadow: 0 0 5px #fff, 0 0 10px #00BFFF; /* Blue Neon */
+}
+
+.score-main span {
+    font-size: 2.5rem;
+    color: #00BFFF; /* Blue Neon */
+    text-shadow: 0 0 8px #fff, 0 0 15px #00BFFF; /* Blue Neon */
 }
 
 .combo-display {
-    color: #ff4d4d;
-    animation: pulse 0.5s ease-in-out;
+    color: #00BFFF; /* Blue Neon */
+    animation: pulse 0.5s ease-in-out infinite;
     font-size: 1.5rem;
-    text-shadow: 0 0 10px #ff4d4d;
+    font-weight: bold;
+    text-shadow: 0 0 10px #00BFFF; /* Blue Neon */
+    text-align: center;
+    margin-top: 10px;
 }
+
+.controls {
+    margin-top: 0;
+    text-align: left;
+    color: #ccc;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.controls p {
+    margin: 8px 0;
+    padding-left: 10px;
+    border-left: 2px solid #00BFFF; /* Blue Neon */
+}
+
+.timer-container {
+    margin-top: 20px;
+    text-align: center;
+    width: 100%;
+}
+
+.timer-container h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #00BFFF;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+#timer-display {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #fff;
+    background: rgba(0,0,0,0.3);
+    padding: 10px;
+    border-radius: 5px;
+    text-shadow: 0 0 5px #fff, 0 0 10px #00BFFF;
+    transition: color 0.3s, text-shadow 0.3s;
+}
+
+#timer-display.warning {
+    color: #FF4136;
+    text-shadow: 0 0 5px #fff, 0 0 10px #FF4136;
+}
+
+/* --- NEON UI STYLES END --- */
 
 @keyframes pulse {
     0% {
         transform: scale(1);
+        opacity: 0.8;
     }
 
     50% {
-        transform: scale(1.2);
+        transform: scale(1.1);
+        opacity: 1;
     }
 
     100% {
         transform: scale(1);
+        opacity: 0.8;
     }
 }
 
@@ -100,21 +171,6 @@ canvas {
     background: #111;
     border-radius: 8px;
     box-shadow: 0 0 25px rgba(0, 255, 255, 0.2);
-}
-
-.controls {
-    margin-top: 20px;
-    text-align: center;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 15px;
-    border-radius: 10px;
-    border: 1px solid #333;
-    color: #aaa;
-}
-
-.controls p {
-    margin: 5px 0;
-    font-size: 0.9rem;
 }
 
 .game-over-overlay {
