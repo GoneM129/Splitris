@@ -190,36 +190,45 @@ canvas {
 .game-over-content {
     background: rgba(17, 17, 17, 0.7);
     padding: 40px;
-    border-radius: 15px;
+    border-radius: 10px;
     text-align: center;
     color: #eee;
     border: 2px solid #FF4136; /* Red Neon Border */
     box-shadow: 0 0 25px rgba(255, 65, 54, 0.6), inset 0 0 15px rgba(255, 65, 54, 0.4); /* Red Neon Shadow */
+    backdrop-filter: blur(5px);
+    width: 350px;
 }
 
 .game-over-content h2 {
     font-size: 3rem;
     color: #FF4136; /* Red Neon */
     text-shadow: 0 0 8px #fff, 0 0 15px #FF4136;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     text-transform: uppercase;
 }
 
 .game-over-content p {
-    font-size: 1.5rem;
-    color: #ddd;
-    margin: 10px 0;
-    text-shadow: 0 0 5px #00BFFF; /* Blue Neon for contrast */
+    font-size: 1.2rem;
+    color: #FF4136; /* Red Neon */
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px solid rgba(255, 65, 54, 0.3);
+    padding-bottom: 10px;
+    margin: 20px 0;
 }
 
 .game-over-content p span {
+    font-size: 1.8rem;
     font-weight: bold;
     color: #fff;
+    text-shadow: 0 0 5px #fff, 0 0 10px #FF4136;
 }
 
 .restart-btn {
-    background: linear-gradient(45deg, #FF4136, #F012BE); /* Red/Pink Gradient */
-    color: white;
+    background: rgba(255, 65, 54, 0.1);
+    color: #FF4136;
     border: 2px solid #FF4136;
     padding: 15px 30px;
     font-size: 1.2rem;
@@ -229,12 +238,15 @@ canvas {
     margin-top: 30px;
     transition: all 0.3s ease;
     text-transform: uppercase;
-    box-shadow: 0 0 10px #FF4136, 0 0 20px #F012BE;
+    text-shadow: 0 0 5px rgba(255, 65, 54, 0.7);
+    box-shadow: 0 0 10px rgba(255, 65, 54, 0.5), inset 0 0 5px rgba(255, 65, 54, 0.3);
 }
 
 .restart-btn:hover {
     transform: scale(1.05);
-    box-shadow: 0 0 15px #FF4136, 0 0 30px #F012BE;
+    background: rgba(255, 65, 54, 0.2);
+    color: #fff;
+    box-shadow: 0 0 15px rgba(255, 65, 54, 0.8), inset 0 0 8px rgba(255, 65, 54, 0.5);
 }
 
 .level-indicator {
